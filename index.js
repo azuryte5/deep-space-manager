@@ -1,7 +1,8 @@
 const db = require('./db/connections');
 const mysql = require('mysql2');
 const inquirer = require('inquirer')
-const table = require('console.table')
+const table = require('console.table');
+const { ColdObservable } = require('rxjs/internal/testing/ColdObservable');
 
 const switchBoard = () => {
     return inquirer
@@ -63,10 +64,19 @@ const switchBoard = () => {
             `, choiceDept.loop, (err, res) => {
                 if (err) {
                 console.log("An error occurred");
-                }
-        console.table(res)
+                };
+        console.table(res);
         switchBoard();
         })})});
+        break;
+    case "View All Roles":
+        db.query(`SELECT department.department_name, roles.title, roles.salary
+        FROM roles
+        Inner JOIN department ON roles.department_id = department.id`, (err, res) => {
+            if (err) {console.log("An error occurred")};
+        console.table(res);
+        switchBoard();
+        });
         break;
 
    
