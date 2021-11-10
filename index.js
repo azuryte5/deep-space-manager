@@ -9,7 +9,7 @@ const switchBoard = () => {
         type:"list",
         name:"loop",
         message: "What would you like to do?",
-        choices:['View All Departments', "View All Employees", "Placeholder 2", "Placeholder 3"],
+        choices:['View All Departments', "View All Employees", "View ALL Employees by department", "Placeholder 3"],
     }).then(choice =>{
     switch(choice.loop) {
     case 'View All Departments':
@@ -19,20 +19,37 @@ const switchBoard = () => {
         switchBoard()
         break;
     case 'View All Employees':
-        db.query(`SELECT employees.first_name, employees.last_name, roles.title, roles.salary, department.name AS department_name
-                FROM employees JOIN roles ON employees.role_id = roles.id JOIN department ON roles.department_id = department.id;`, function (err, results) {
+        db.query(`SELECT employees.*, department.name AS department, roles.title, roles.salary
+        FROM roles
+        JOIN employees ON roles.id = employees.role_id
+        JOIN department ON roles.department_id = department.id
+        ORDER by employees.id;`, function (err, results) {
+        console.table(results);
+        });
+        switchBoard()
+        break;
+    case 'View All Employees by department':
+       prompt({
+           type: "list",
+           name: "loop",
+           message: "Pick a department",
+           choices: db.query(`SELECT * FROM department`, function(err, results {
+           return results    
+           }))
+       }).then(choice => {
+           db.query(`SELECT * FROM employees WHERE id = ? ` )
+       }) 
+    
+    db.query(`SELECT employees.*, department.name AS department, roles.title, roles.salary
+        FROM roles
+        JOIN employees ON roles.id = employees.role_id
+        JOIN department ON roles.department_id = department.id
+        ORDER by employees.id;`, function (err, results) {
         console.table(results);
         });
         switchBoard()
         break;
     }})}
-
-
-
-
-db.query('SELECT * FROM roles', function (err, results) {
-    console.table(results);
-  });
 
 
 db.connect(err => {

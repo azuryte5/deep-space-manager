@@ -1,0 +1,29 @@
+{
+  "name": "deep-space-manager",
+  "version": "1.0.0",
+  "description": "12. SQL Challenge: Employee Tracker # Table of Contents 1. [Links](#links) 1. [Usage](#usage) 1. [Tech used](#tech-used) 1. [Assignment Details](#assignment-details)     1. [User Story](#user-story)     1. [Acceptance Criteria](#acceptance-criteria) 1. [Credits](#credits)",
+  "main": "index.js",
+  "directories": {
+    "lib": "lib"
+  },
+  "dependencies": {
+    "console.table": "^0.10.0",
+    "inquirer": "^8.2.0",
+    "mysql2": "^2.3.2"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/azuryte5/deep-space-manager.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/azuryte5/deep-space-manager/issues"
+  },
+  "homepage": "https://github.com/azuryte5/deep-space-manager#readme"
+}
