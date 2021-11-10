@@ -10,7 +10,7 @@ const switchBoard = () => {
         name:"loop",
         message: "What would you like to do?",
         choices:["View All Departments", "View All Employees",
-                "View ALL Employees by Department", "View All Employees by Manager",
+                "View All Employees by Department", "View All Employees by Manager",
                 "Add Employee", "Remove Employee", 
                 "Update Employee Role", "Update Employee Manager",
                 "View All Roles", "Add Role", "Remove Role", "Add Department",
@@ -18,7 +18,7 @@ const switchBoard = () => {
     }).then(choice =>{
     switch(choice.loop) {
     case 'View All Departments':
-        db.query('SELECT * FROM department', function (err, results) {
+        db.query('SELECT * FROM department', (err, results) => {
         console.table(results);
         });
         switchBoard()
@@ -34,8 +34,8 @@ const switchBoard = () => {
             FROM employees
             LEFT JOIN roles ON employees.role_id = roles.id
             LEFT JOIN department ON roles.department_id = department.id
-            LEFT JOIN employees manager ON employees.manager_id = manager.id;
-            `, function (err, results) {
+            LEFT JOIN employees manager ON employees.manager_id = manager.id`, (err, results) => 
+        {
         console.table(results);
         });
         switchBoard()
@@ -43,33 +43,33 @@ const switchBoard = () => {
     
   
     case 'View All Employees by Department':
-        const pickDepartment = db.query("SELECT * FROM department", (err, res) =>{
-            if (err){console.log("An error occurred")
-        return res.map(({id, name}) => ({name: name, value: id}));
-        }
-        console.log(pickDepartment.department_name)
-    })
-        prompt.apply({
+        db.query(`SELECT * FROM department`, (err, res) => {
+            if (err) {console.log("An error occurred")};
+
+        const pickDepartment = res.map(({id, department_name}) => ({name: department_name, value: id}))
+        inquirer.prompt({
             type: "list",
             name: "loop",
-            message: "Pick a department",
+            message: "Pick a Department",
             choices: pickDepartment
-        }).then (choice => {
-            choice.loop
-        const sql = db.query("SELECT * FROM department WHERE id = ?", pickDepartment, (err, res) => {
+        }).then (choices => {
+            const choiceDept = choices
+            console.log(choiceDept)
+            db.query(`Select CONCAT (first_name, " ", last_name) AS name 
+            From employees
+            LEFT JOIN roles ON roles.id = employees.role_id
+            LEFT JOIN department ON department.id = roles.department_id
+            WHERE department.id = ?
+            `, choiceDept.loop, (err, res) => {
                 if (err) {
-                    res.status(400).json({ error: err.message });
-                    return;
+                console.log("An error occurred");
                 }
-        })
-
-        });
-        switchBoard()
+        console.table(res)
+        switchBoard();
+        })})});
         break;
 
-    case 'Quit':
-        process.exit()
-        break;
+   
     
     // case 'View All Employees by department':
     //    prompt({
@@ -83,15 +83,18 @@ const switchBoard = () => {
     //        db.query(`SELECT * FROM employees WHERE id = ? ` )
     //    }) 
     
-    db.query(`SELECT employees.*, department.name AS department, roles.title, roles.salary
-        FROM roles
-        JOIN employees ON roles.id = employees.role_id
-        JOIN department ON roles.department_id = department.id
-        ORDER by employees.id;`, function (err, results) {
-        console.table(results);
-        });
-        switchBoard()
-        break;
+    // db.query(`SELECT employees.*, department.name AS department, roles.title, roles.salary
+    //     FROM roles
+    //     JOIN employees ON roles.id = employees.role_id
+    //     JOIN department ON roles.department_id = department.id
+    //     ORDER by employees.id;`, function (err, results) {
+    //     console.table(results);
+    //     });
+    //     switchBoard()
+    //     break;
+    case 'Quit':
+        process.exit()
+        
     }})}
 
 
