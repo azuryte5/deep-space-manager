@@ -1,6 +1,7 @@
 const db = require('./db/connections');
 const inquirer = require('inquirer')
 const table = require('console.table');
+const { title } = require('process');
 // const routes = require('./routes/crudRoutes');
 
 
@@ -192,11 +193,48 @@ const switchBoard = () => {
         break;
 
     case "Remove Department":
+
         switchBoard()
         break;
 
     case "Update Employee Role":
+        db.query(`SELECT * FROM employees`, (err, res) => {
+            if (err) {console.log("An error occurred")};
+        console.log(res)   
+        const pickEmployee = res.map((employees) => ({name: employees.first_name + " " + employees.last_name, value: employees.id}))
+        console.log(pickEmployee)
+        db.query(`SELECT * FROM roles`, (err,res) =>{
+            if (err) {console.log("An error occurred")};
+        const pickRole = res.map((roles) => ({name: roles.title, value: roles.id}))
+        
+        inquirer.prompt([
+            {
+            type: 'list',
+            name: 'update',
+            message: 'Select an employee to update Role',
+            choices: pickEmployee
+            },
+            {
+            type: 'list',
+            name: 'role',
+            message: 'Select a new role',
+            choices: pickRole
+            } 
+        ]).then(pickEmployeeAnswer => {
+            const pickedEmployee= pickEmployeeAnswer
+            console.log(pickedEmployee)
+        
+        const params = [pickedEmployee.role, pickedEmployee.update]
+        console.log(params)
+
+        db.query(`UPDATE employees SET role_id = ? WHERE id = ?`, params, (err, res) => {
+            if (err) {console.log("An error occurred")};
+        console.log(res)
         switchBoard()
+        });
+        });
+        });
+        });
         break;
     
     case "Update Employee Manager":
