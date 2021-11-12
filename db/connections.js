@@ -12,4 +12,10 @@ const db = mysql.createConnection(
     console.log('Connected to the Manager database.')
   );
 
+  
+db.connect(err => {
+  if (err) throw err;
+  console.log('Database connected.');
+  });
+
   module.exports = db;
