@@ -238,8 +238,48 @@ const switchBoard = () => {
         break;
     
     case "Update Employee Manager":
+        db.query(`SELECT * FROM employees`, (err, res) => {
+            if (err) {console.log("An error occurred")};
+        console.log(res)   
+        const pickEmployee = res.map((employees) => ({name: employees.first_name + " " + employees.last_name, value: employees.id, boss: employees.manager_id}))
+        console.log(pickEmployee)
+
+        db.query(`SELECT * FROM employees WHERE manager_id IS NULL`, (err,res) => {
+            if (err) {console.log(err)};
+    
+            const pickManager = res.map((manager) => ({name: manager.first_name + " " + manager.last_name, value: manager.id}))
+            pickManager.push({name:"None" , value: null});
+            console.log(pickManager);
+
+        inquirer.prompt([
+            {
+            type: 'list',
+            name: 'update',
+            message: 'Select an employee to update their manager',
+            choices: pickEmployee
+            },
+            {
+                type: "list",
+                name: "manager",
+                message: "Who is this employees manager",
+                choices: pickManager
+            }]).then(pickEmployeeAnswer => {
+                const pickedEmployee= pickEmployeeAnswer
+                console.log(pickedEmployee)
+            
+            const params = [pickedEmployee.manager, pickedEmployee.update]
+            console.log(params)
+            
+
+        db.query(`UPDATE employees SET manager_id = ? WHERE id = ?`, params, (err, res) => {
+            if (err) {console.log("An error occurred")};
+        console.log(res)
         switchBoard()
-        break;
+    });
+});
+});
+});
+    break;
     
     case 'Quit':
         process.exit()
