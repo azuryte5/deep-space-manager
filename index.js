@@ -218,11 +218,52 @@ const switchBoard = () => {
         break;
 
     case "Add Department":
-        switchBoard()
+        inquirer.prompt([
+            {
+                type: "input",
+                name: "addDepartment",
+                message: "Enter a name for a new Department"
+                // validate: roleInput => {
+                //     if (!roleInput) {
+                //     console.log("Role name can't be empty!")}}
+            }]).then(departmentAnswers => {
+                const params = departmentAnswers.addDepartment
+            db.query(`INSERT INTO department (department_name) VALUES (?)`, params, (err,res) =>{
+                if (err){console.log(err)};
+                console.log("Department was added")
+      
+            switchBoard()
+            });
+            });
         break;
     
     case "Remove Employee":
-        switchBoard()
+        db.query(`SELECT * FROM employees`, (err, res) =>{
+            if (err){console.log(err)};
+        
+        const deleteEmployee = res.map((toDelete)=>({name: toDelete.first_name + " " + toDelete.last_name, value: toDelete.id}))
+        
+        inquirer
+        .prompt([
+            {
+            type: 'list',
+            name: 'destroy',
+            message: 'Select an employee to delete',
+            choices: deleteEmployee
+            }
+            
+        ]).then(toDelete => {
+            const params = toDelete.destroy
+            console.log(toDelete)
+            console.log(toDelete.destroy)
+        db.query(`DELETE FROM employees WHERE id = ?`, params, (err, res) => {
+            if (err) {console.log("An error occurred")};
+            console.log(res);
+            console.log("An employee was deleted");
+        switchBoard();
+        });
+        });
+        });
         break;
     
     case "Remove Role":
