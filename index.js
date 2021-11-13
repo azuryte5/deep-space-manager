@@ -177,7 +177,44 @@ const switchBoard = () => {
         break;
     
     case "Add Role":
+
+    db.query(`SELECT * FROM department`, (err,res) => {
+        if (err){console.log(err)};
+    const pickDepartment = res.map((department) =>({name:department.department_name, value: department.id}))
+        console.log(pickDepartment)
+        inquirer.prompt([
+            {
+                type: "input",
+                name: "addRole",
+                message: "Enter a name for a new role"
+                // validate: roleInput => {
+                //     if (!roleInput) {
+                //     console.log("Role name can't be empty!")}}
+            },
+            {
+                type: "input",
+                name: "salary",
+                message: "Enter a salary for job",
+                // validate: salaryCheck => {
+                //     if (salaryCheck <=0) {
+                //         console.log("Salary can't be empty or negative value!");
+                //     return false}}
+            },
+            {   type: "list",
+                name: "askDepartment",
+                message: "Which department does this role belong to?",
+                choices: pickDepartment
+            }
+        ]).then(roleAnswers=>{
+            const params = [roleAnswers.addRole, roleAnswers.salary, roleAnswers.askDepartment]
+        db.query(`INSERT INTO roles (title, salary, department_id) VALUES (?,?,?)`, params, (err,res) =>{
+            if (err){console.log(err)};
+            console.log("Role was added")
+      
         switchBoard()
+        });
+        });
+        });
         break;
 
     case "Add Department":
