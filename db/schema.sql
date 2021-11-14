@@ -29,4 +29,4 @@ CREATE TABLE employees (
 );
 
 SET FOREIGN_KEY_CHECKS = 0
--- http://www.sqlines.com/mysql/set_foreign_key_checks
+-- To get the View by manager to work

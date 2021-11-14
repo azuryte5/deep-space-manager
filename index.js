@@ -75,7 +75,7 @@ const switchBoard = () => {
         break;
 
     case "View All Roles":
-        db.query(`SELECT department.department_name, roles.title, roles.salary
+        db.query(`SELECT department.department_name, roles.id, roles.title, roles.salary
         FROM roles
         Inner JOIN department ON roles.department_id = department.id`, (err, res) => {
             if (err) {console.log("An error occurred")};
@@ -111,7 +111,15 @@ const switchBoard = () => {
         break;
 
     case "View Budget by Department":
+        db.query(`SELECT department.department_name AS department, SUM(roles.salary) AS budget 
+        FROM employees LEFT JOIN roles ON employees.role_id = roles.id
+        LEFT JOIN department ON roles.department_id = department.id
+        GROUP BY department.id, department ORDER BY budget DESC`, (err, res) => {
+            if (err) {console.log("An error occurred")};
+        
+        console.table(res)
         switchBoard()
+        })
         break;
     
     case "Add Employee":
@@ -174,7 +182,7 @@ const switchBoard = () => {
     });
     });
     });
-        break;
+    break;
     
     case "Add Role":
 
@@ -267,12 +275,60 @@ const switchBoard = () => {
         break;
     
     case "Remove Role":
-        switchBoard()
+        db.query(`SELECT * FROM roles`, (err, res) =>{
+            if (err){console.log(err)};
+        
+        const deleteRoles = res.map((toDelete)=>({name: toDelete.title, value: toDelete.id}))
+        
+        inquirer
+        .prompt([
+            {
+            type: 'list',
+            name: 'destroy',
+            message: 'Select a Role to delete',
+            choices: deleteRoles
+            }
+            
+        ]).then(toDelete => {
+            const params = toDelete.destroy
+            console.log(toDelete)
+            console.log(toDelete.destroy)
+        db.query(`DELETE FROM roles WHERE id = ?`, params, (err, res) => {
+            if (err) {console.log("An error occurred")};
+            console.log(res);
+            console.log("A Role was deleted");
+        switchBoard();
+        });
+        });
+        });
         break;
 
     case "Remove Department":
-
-        switchBoard()
+        db.query(`SELECT * FROM department`, (err, res) =>{
+            if (err){console.log(err)};
+        
+        const deleteDepartment = res.map((toDelete)=>({name: toDelete.department_name, value: toDelete.id}))
+        
+        inquirer.prompt([
+            {
+            type: 'list',
+            name: 'destroy',
+            message: 'Select an department to delete',
+            choices: deleteDepartment
+            }
+            
+        ]).then(toDelete => {
+            const params = toDelete.destroy
+            console.log(toDelete)
+            console.log(toDelete.destroy)
+        db.query(`DELETE FROM department WHERE id = ?`, params, (err, res) => {
+            if (err) {console.log("An error occurred")};
+            console.log(res);
+            console.log("A Department was deleted");
+        switchBoard();
+        });
+        });
+        });
         break;
 
     case "Update Employee Role":
