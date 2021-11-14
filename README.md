@@ -27,7 +27,7 @@ To exit program select ```Quit``` or Shirt+C
 
 
  ![code preview](https://user-images.githubusercontent.com/85147307/141664565-3c91c212-80a0-413d-a103-e90588f6a8bb.png)
- ![https://user-images.githubusercontent.com/85147307/141664564-00cec570-a902-441e-8dd2-9036aeec96be.png)
+ ![schema and seeds](https://user-images.githubusercontent.com/85147307/141664564-00cec570-a902-441e-8dd2-9036aeec96be.png)
 
 -----
 ## Tech Used 
