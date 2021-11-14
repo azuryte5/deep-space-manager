@@ -9,13 +9,19 @@ const db = mysql.createConnection(
       password: 'J3nnif3rCal3ndar',
       database: 'business'
     },
-    console.log('Connected to the Manager database.')
-  );
+   console.log(`
+   -----------------------------
+   Welcome To Deep Space Manager
+   -----------------------------
+   
+   
+   
+  `));
 
   
 db.connect(err => {
   if (err) throw err;
-  console.log('Database connected.');
+  console.log("An error occurred");
   });
 
   module.exports = db;

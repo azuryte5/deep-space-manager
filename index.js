@@ -2,9 +2,9 @@ const db = require('./db/connections');
 const inquirer = require('inquirer')
 const table = require('console.table');
 const { title } = require('process');
-// const routes = require('./routes/crudRoutes');
 
 
+// SwitchBoard gets called to start menu selection
 const switchBoard = () => {
     return inquirer
     .prompt({
@@ -13,21 +13,22 @@ const switchBoard = () => {
         message: "What would you like to do?",
         choices:["View All Departments", "View All Employees",
                 "View All Employees by Department", "View All Employees by Manager",
-                "Add Employee", "Remove Employee", 
-                "Update Employee Role", "Update Employee Manager",
-                "View All Roles", "Add Role", "Remove Role", "Add Department",
-                "Remove Department", "View Budget by Department", "Quit"]
+                "View All Roles", "View Budget by Department", "Add Employee", "Add Role", 
+                "Add Department", "Update Employee Role", "Update Employee Manager", "Remove Employee", 
+                "Remove Role", "Remove Department", "Quit"]
     }).then(choice =>{
+    // Switch will take loop selection and run that query by case    
     switch(choice.loop) {
+    // Standard ask to view all departments    
     case 'View All Departments':
         db.query('SELECT * FROM department', (err, res) => {
         if (err) {console.log("An error occurred")};
-        console.log();
+        // console.log();
         console.table(res);
         switchBoard();
         });
         break;
-
+    // Standard ask to view all employees
     case 'View All Employees':
         db.query(`SELECT employees.id AS id, 
             employees.first_name, 
@@ -46,12 +47,12 @@ const switchBoard = () => {
         });
         break;
     
-  
+    // Bonus ask to view staff by department, 2 queries chained
     case 'View All Employees by Department':
         db.query(`SELECT * FROM department`, (err, res) => {
             if (err) {console.log("An error occurred")};
         const pickDepartment = res.map(({id, department_name}) => ({name: department_name, value: id}))
-        console.log(pickDepartment);
+        // console.log(pickDepartment);
         inquirer.prompt({
             type: "list",
             name: "dept",
@@ -59,7 +60,7 @@ const switchBoard = () => {
             choices: pickDepartment
         }).then (choices => {
             const choiceDept = choices
-            console.log(choiceDept)
+            // console.log(choiceDept)
             db.query(`SELECT CONCAT (first_name, " ", last_name) AS name 
             FROM employees
             LEFT JOIN roles ON roles.id = employees.role_id
@@ -73,25 +74,26 @@ const switchBoard = () => {
         switchBoard();
         })})});
         break;
-
+    // Standard ask to view roles
     case "View All Roles":
-        db.query(`SELECT department.department_name, roles.id, roles.title, roles.salary
+        db.query(`SELECT roles.id, roles.title, roles.salary, department.department_name AS department 
         FROM roles
-        Inner JOIN department ON roles.department_id = department.id`, (err, res) => {
+        Inner JOIN department ON roles.department_id = department.id
+        ORDER BY id`, (err, res) => {
             if (err) {console.log("An error occurred")};
         console.table(res);
         switchBoard();
         });
         break;
-    
+    // Bonus ask to view by Manager (managers can't have managers)
     case "View All Employees by Manager":
         db.query(`SELECT CONCAT (first_name, " ", last_name) AS name, manager_id, id
                 FROM employees WHERE manager_id IS NULL`, (err, res) => {
             if (err) {console.log("An error occurred")};
-            console.log(res);
+            // console.log(res);
             const pickManager= res.map((manager) => ({name: manager.name, value: manager.id}))
             pickManager.push({name:"None", value: null})        
-            console.log(pickManager);
+            // console.log(pickManager);
         inquirer.prompt({
             type: "list",
             name: "manage",
@@ -99,7 +101,7 @@ const switchBoard = () => {
             choices: pickManager
         }).then (choices => {
             const choiceManager = choices.manage
-            console.log(choices.manage)
+            // console.log(choices.manage)
             db.query(`SELECT CONCAT (first_name, " ", last_name) AS name 
             FROM employees WHERE manager_id = ?`, choiceManager, (err, res) => {
                 if (err) {
@@ -109,7 +111,8 @@ const switchBoard = () => {
         switchBoard();
         })})});
         break;
-
+    
+    // BONUS ask, view by budget, two joins and group by
     case "View Budget by Department":
         db.query(`SELECT department.department_name AS department, SUM(roles.salary) AS budget 
         FROM employees LEFT JOIN roles ON employees.role_id = roles.id
@@ -122,21 +125,20 @@ const switchBoard = () => {
         })
         break;
     
+    // Standard ask to add employees
     case "Add Employee":
     db.query(`SELECT roles.id, roles.title FROM roles`, (err,res) => {
         if (err) {console.log(err)};
     
         const pickRole = res.map((roles) => ({name: roles.title, value: roles.id}));
-        console.log(pickRole);
-    
+        // console.log(pickRole);
     
     db.query(`SELECT * FROM employees WHERE manager_id IS NULL`, (err,res) => {
         if (err) {console.log(err)};
 
         const pickManager = res.map((manager) => ({name: manager.first_name + " " + manager.last_name, value: manager.id}))
         pickManager.push({name:"None" , value: null});
-        console.log(pickManager);
-   
+        // console.log(pickManager);
         inquirer.prompt([
             {
                 type: "input",
@@ -175,7 +177,7 @@ const switchBoard = () => {
     
         db.query(`INSERT INTO employees (first_name, last_name, role_id, manager_id) VALUES (?,?,?,?)`, addEmployee, (err, res) => {
         if (err) {console.log("An error occurred")};
-         console.log(res);
+        //  console.log(res);
          console.log("Employee successfully added!");
          switchBoard();       
     });
@@ -184,29 +186,22 @@ const switchBoard = () => {
     });
     break;
     
+    // Standard ask to add role
     case "Add Role":
-
     db.query(`SELECT * FROM department`, (err,res) => {
         if (err){console.log(err)};
     const pickDepartment = res.map((department) =>({name:department.department_name, value: department.id}))
-        console.log(pickDepartment)
+        // console.log(pickDepartment)
         inquirer.prompt([
             {
                 type: "input",
                 name: "addRole",
                 message: "Enter a name for a new role"
-                // validate: roleInput => {
-                //     if (!roleInput) {
-                //     console.log("Role name can't be empty!")}}
             },
             {
                 type: "input",
                 name: "salary",
-                message: "Enter a salary for job",
-                // validate: salaryCheck => {
-                //     if (salaryCheck <=0) {
-                //         console.log("Salary can't be empty or negative value!");
-                //     return false}}
+                message: "Enter a salary for job"
             },
             {   type: "list",
                 name: "askDepartment",
@@ -218,13 +213,13 @@ const switchBoard = () => {
         db.query(`INSERT INTO roles (title, salary, department_id) VALUES (?,?,?)`, params, (err,res) =>{
             if (err){console.log(err)};
             console.log("Role was added")
-      
         switchBoard()
         });
         });
         });
         break;
-
+    
+    // Standard ask to add Department
     case "Add Department":
         inquirer.prompt([
             {
@@ -245,6 +240,7 @@ const switchBoard = () => {
             });
         break;
     
+    // Bonus ask to remove employee
     case "Remove Employee":
         db.query(`SELECT * FROM employees`, (err, res) =>{
             if (err){console.log(err)};
@@ -262,8 +258,8 @@ const switchBoard = () => {
             
         ]).then(toDelete => {
             const params = toDelete.destroy
-            console.log(toDelete)
-            console.log(toDelete.destroy)
+            // console.log(toDelete)
+            // console.log(toDelete.destroy)
         db.query(`DELETE FROM employees WHERE id = ?`, params, (err, res) => {
             if (err) {console.log("An error occurred")};
             console.log(res);
@@ -274,6 +270,7 @@ const switchBoard = () => {
         });
         break;
     
+    // Bonus ask to remove role
     case "Remove Role":
         db.query(`SELECT * FROM roles`, (err, res) =>{
             if (err){console.log(err)};
@@ -302,7 +299,8 @@ const switchBoard = () => {
         });
         });
         break;
-
+    
+    // bonus ask to remove department
     case "Remove Department":
         db.query(`SELECT * FROM department`, (err, res) =>{
             if (err){console.log(err)};
@@ -331,12 +329,13 @@ const switchBoard = () => {
         });
         break;
 
+    // Standard ask to update role
     case "Update Employee Role":
         db.query(`SELECT * FROM employees`, (err, res) => {
             if (err) {console.log("An error occurred")};
-        console.log(res)   
+        // console.log(res)   
         const pickEmployee = res.map((employees) => ({name: employees.first_name + " " + employees.last_name, value: employees.id}))
-        console.log(pickEmployee)
+        // console.log(pickEmployee)
         db.query(`SELECT * FROM roles`, (err,res) =>{
             if (err) {console.log("An error occurred")};
         const pickRole = res.map((roles) => ({name: roles.title, value: roles.id}))
@@ -359,31 +358,32 @@ const switchBoard = () => {
             console.log(pickedEmployee)
         
         const params = [pickedEmployee.role, pickedEmployee.update]
-        console.log(params)
+        // console.log(params)
 
         db.query(`UPDATE employees SET role_id = ? WHERE id = ?`, params, (err, res) => {
             if (err) {console.log("An error occurred")};
-        console.log(res)
+        // console.log(res)
         switchBoard()
         });
         });
         });
         });
         break;
-    
+
+    // Bonus ask to update assigned manager (can make new managers if null!)
     case "Update Employee Manager":
         db.query(`SELECT * FROM employees`, (err, res) => {
             if (err) {console.log("An error occurred")};
-        console.log(res)   
+        // console.log(res)   
         const pickEmployee = res.map((employees) => ({name: employees.first_name + " " + employees.last_name, value: employees.id, boss: employees.manager_id}))
-        console.log(pickEmployee)
+        // console.log(pickEmployee)
 
         db.query(`SELECT * FROM employees WHERE manager_id IS NULL`, (err,res) => {
             if (err) {console.log(err)};
     
             const pickManager = res.map((manager) => ({name: manager.first_name + " " + manager.last_name, value: manager.id}))
             pickManager.push({name:"None" , value: null});
-            console.log(pickManager);
+            // console.log(pickManager);
 
         inquirer.prompt([
             {
@@ -414,11 +414,11 @@ const switchBoard = () => {
 });
 });
     break;
-    
+    // Quits the app
     case 'Quit':
         process.exit()
         
     }})}
 
-
+// Starts program
 switchBoard();
